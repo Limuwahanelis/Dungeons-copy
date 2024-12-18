@@ -1,0 +1,28 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public abstract class #SCRIPTNAME#
+{
+    public delegate #SCRIPTNAME# GetState(Type state);
+    protected GetState _getType;
+    protected #STATETYPE#Context _context;
+
+    public #SCRIPTNAME#(GetState function)
+    {
+        _getType = function;
+    }
+    public virtual void SetUpState(#STATETYPE#Context context)
+    {
+        _context = context;
+    }
+    public abstract void Update();
+    public abstract void InterruptState();
+    public void ChangeState(Type newStateType)
+    {
+        #SCRIPTNAME# state = _getType(newStateType);
+        _context.ChangeState(state);
+        state.SetUpState(_context);
+    }
+}
