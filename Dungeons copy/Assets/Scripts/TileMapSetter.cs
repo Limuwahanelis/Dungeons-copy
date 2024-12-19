@@ -59,8 +59,6 @@ public class TileMapSetter : MonoBehaviour
             for(int j=0;j<_gridSize.x; j++)
             {
               _blockPlacer.TryCreateBlock(new Vector3(j, 0, i), Vector3.one,new Vector2Int(j,i));
-
-
             }
         }
         _blockPlacer.RemoveBlocksOutsideGrid(GridSize);
