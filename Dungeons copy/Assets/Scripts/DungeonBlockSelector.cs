@@ -12,8 +12,10 @@ public class DungeonBlockSelector : MonoBehaviour
     [SerializeField] GameObject _tilePrefab;
     [SerializeField] LayerMask _mask;
     [SerializeField] TileMapSetter _map;
-    [SerializeField] List<ListOfGameObjects> _tiles;
+    //[SerializeField] List<ListOfGameObjects> _tiles;
     [SerializeField] DungeonBlockPlacer _blockPlacer;
+    [SerializeField] SelectionTilePool _tilePool;
+    private List<SelectionTile> _tiles=new List<SelectionTile>();
     private DungeonTile _blockPointedAt;
     private Vector3 _selectedTilePos;
     private Vector3 _lastPos;
@@ -54,6 +56,7 @@ public class DungeonBlockSelector : MonoBehaviour
             float posZ = Mathf.Round(hit.point.z);
             if (_lastPos.x != posX || _lastPos.z != posZ)
             {
+               
                 _lastPos.x = posX;
                 _lastPos.z = posZ;
                 _blockPointedAt = hit.transform.parent.gameObject.GetComponent<DungeonTile>();
@@ -63,6 +66,12 @@ public class DungeonBlockSelector : MonoBehaviour
                 _selectedTilePos.z = posZ;
                 if(_isHoldingMouse && (_mouseHoldStartPos.x!= posX || _mouseHoldStartPos.z != posZ))
                 {
+                    Logger.Log("DIF");
+                    for (int i = _tiles.Count-1; i >= 0; i--)
+                    {
+                        _tiles[i].ReturnToPool();
+                        _tiles.RemoveAt(i);
+                    }
                     Logger.Log("New selection");
                     float maxX = 0;
                     float minX = 0;
@@ -83,10 +92,14 @@ public class DungeonBlockSelector : MonoBehaviour
                             if (blocksList.gameObjects[i].transform.position.x > maxX) break;
                             if (blocksList.gameObjects[i].transform.position.x < minX) continue;
                             Logger.Log($" {blocksList.gameObjects[i].transform.position.x},{index2}");
+                            SelectionTile tile = _tilePool.GetItem();
+                            _tiles.Add(tile);
+                            tile.transform.position = new Vector3(blocksList.gameObjects[i].transform.position.x, 1.001f, index2);
                         }
                         index2 += _gridMult;
                     }
                 }
+                
             }
             //_selectedObject = hit.transform.gameObject.GetComponent<MapTile>();
         }
@@ -100,8 +113,11 @@ public class DungeonBlockSelector : MonoBehaviour
     {
         if (_blockPointedAt.Dig) return;
         _blockPointedAt.SetDigState(true);
-        GameObject go= Instantiate(_tilePrefab);
-        go.transform.position = _blockPointedAt.TopBlockPos;
+        //GameObject go= Instantiate(_tilePrefab);
+        //go.transform.position = _blockPointedAt.TopBlockPos;
+        SelectionTile tile = _tilePool.GetItem();
+        _tiles.Add(tile);
+        tile.transform.position = _blockPointedAt.TopBlockPos;
     }
     public void SetCanHitMap(bool value)
     {
@@ -112,10 +128,16 @@ public class DungeonBlockSelector : MonoBehaviour
     {
         _isHoldingMouse = true;
         _mouseHoldStartPos = _blockPointedAt.TopBlockPos;
+        PlaceTile();
     }
     public void StopTileHold()
     {
         _isHoldingMouse = false;
+        for (int i = _tiles.Count - 1; i >= _tiles.Count; i--)
+        {
+            _tiles[i].ReturnToPool();
+            _tiles.RemoveAt(i);
+        }
     }
     private void OnDrawGizmos()
     {
