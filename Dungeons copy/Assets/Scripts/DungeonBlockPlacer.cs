@@ -1,18 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class DungeonBlockPlacer : MonoBehaviour
 {
-    [Serializable]
-    public class ListOfGameObjects
-    {
-        public List<GameObject> gameObjects= new List<GameObject>();
-    }
 
-    [SerializeField] List<ListOfGameObjects> _blocks = new List<ListOfGameObjects>();
+
+    [SerializeField,SerializeReference] List<ListOfGameObjects> _blocks = new List<ListOfGameObjects>();
     [SerializeField] Transform _blocksHolder;
     [SerializeField] GameObject _blockPrefab;
     public List<ListOfGameObjects> Blocks { get => _blocks; }
@@ -28,10 +25,11 @@ public class DungeonBlockPlacer : MonoBehaviour
         }
         else
         {
-            if (Blocks[yIndex].gameObjects.Count - 1 > index.x) return false;
+            if (Blocks[yIndex].gameObjects.Count - 1 >= index.x) return false;
         }
-        GameObject el = Instantiate(_blockPrefab);
-        el.name = $"block {yIndex},{index.x}";
+        GameObject el=PrefabUtility.InstantiatePrefab(_blockPrefab) as GameObject;
+        //GameObject el = Instantiate(_blockPrefab);
+        el.name = $"block {index.x},{yIndex}";
         Blocks[yIndex].gameObjects.Add(el);
         el.transform.SetParent(_blocksHolder);
         el.transform.position = pos;
@@ -46,6 +44,7 @@ public class DungeonBlockPlacer : MonoBehaviour
             {
                 if(j>=gridSize.x || i >= gridSize.y)
                 {
+                    Logger.Log($"Remove {_blocks[i].gameObjects[j]}");
                     DestroyImmediate(_blocks[i].gameObjects[j]);
                      _blocks[i].gameObjects.RemoveAt(j);
                 }
