@@ -6,29 +6,26 @@ using UnityEngine;
 
 public class DungeonBlockSelector : MonoBehaviour
 {
-    public Vector3 SelectedTilePos => _selectedTilePos;
     public bool IsHittingMap => _isHittingMap;
-    //public MapTile SelectedTile => _selectedObject;
     [SerializeField] GameObject _tilePrefab;
     [SerializeField] LayerMask _mask;
     [SerializeField] TileMapSetter _map;
-    //[SerializeField] List<ListOfGameObjects> _tiles;
     [SerializeField] DungeonBlockPlacer _blockPlacer;
     [SerializeField] SelectionTilePool _tilePool;
-    private List<SelectionTile> _tiles=new List<SelectionTile>();
-    private DungeonTile _blockPointedAt;
-    private Vector3 _selectedTilePos;
-    private Vector3 _lastPos;
-    private bool _isHittingMap;
-    private Vector2 _mousePos;
-    private Ray r;
-    private bool _canHitMap = true;
-    private Camera _cam;
-    private bool _isHoldingMouse = false;
-    private Vector3 _mouseHoldStartPos;
-    private Vector3 _mouseHoldCurrentPos;
-    private float _gridMult = 1;
     private const float _ROUND_ERROR_= 0.001f;
+    private List<SelectionTile> _tiles=new List<SelectionTile>();
+    private List<SelectionTile> _allSelectedTiles= new List<SelectionTile>();
+    private DungeonTile _blockPointedAt;
+    private Vector3 _lastPos;
+    private Vector3 _mouseHoldStartPos;
+    private Vector2 _mousePos;
+    private Vector3 _hitPos;
+    private Ray r;
+    private Camera _cam;
+    private float _gridMult = 1;
+    private bool _isHittingMap;
+    private bool _canHitMap = true;
+    private bool _isHoldingMouse = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -36,9 +33,6 @@ public class DungeonBlockSelector : MonoBehaviour
         _lastPos.x = 0;
         _lastPos.z = 0;
         _tilePrefab.transform.position = new Vector3(0, 0.001f, 0);
-        _selectedTilePos.x = 0;
-        _selectedTilePos.y = 0.001f;
-        _selectedTilePos.z = 0;
         _tilePrefab.SetActive(true);
     }
 
@@ -51,58 +45,73 @@ public class DungeonBlockSelector : MonoBehaviour
         r = _cam.ScreenPointToRay(_mousePos);
         if (_isHittingMap = Physics.Raycast(r, out hit, Mathf.Infinity, _mask))
         {
-
-            float posX = Mathf.Round(hit.point.x);
-            float posZ = Mathf.Round(hit.point.z);
-            if (_lastPos.x != posX || _lastPos.z != posZ)
-            {
-               
-                _lastPos.x = posX;
-                _lastPos.z = posZ;
-                _blockPointedAt = hit.transform.parent.gameObject.GetComponent<DungeonTile>();
-                _tilePrefab.transform.position = new Vector3(posX, 0.001f, posZ);
-                _selectedTilePos.x = posX;
-                _selectedTilePos.y = 0.001f;
-                _selectedTilePos.z = posZ;
-                if(_isHoldingMouse && (_mouseHoldStartPos.x!= posX || _mouseHoldStartPos.z != posZ))
-                {
-                    Logger.Log("DIF");
-                    for (int i = _tiles.Count-1; i >= 0; i--)
-                    {
-                        _tiles[i].ReturnToPool();
-                        _tiles.RemoveAt(i);
-                    }
-                    Logger.Log("New selection");
-                    float maxX = 0;
-                    float minX = 0;
-                    float maxZ = 0;
-                    float minZ = 0;
-                    maxX = math.max(_lastPos.x, _mouseHoldStartPos.x);
-                    minX = math.min(_lastPos.x, _mouseHoldStartPos.x);
-                    maxZ = math.max(_lastPos.z, _mouseHoldStartPos.z);
-                    minZ = math.min(_lastPos.z, _mouseHoldStartPos.z);
-                    Logger.Log($"Range x: {minX} {maxX} z: {minZ} {maxZ}");
-                    float index = minX;
-                    float index2 = minZ;
-                    while(index2 <= maxZ)
-                    {
-                        ListOfGameObjects blocksList= _blockPlacer.Blocks.Find(x => x.gameObjects.Find(y => math.abs(y.transform.position.z - index2) < _ROUND_ERROR_));
-                        for(int i=0;i< blocksList.gameObjects.Count;i++)
-                        {
-                            if (blocksList.gameObjects[i].transform.position.x > maxX) break;
-                            if (blocksList.gameObjects[i].transform.position.x < minX) continue;
-                            Logger.Log($" {blocksList.gameObjects[i].transform.position.x},{index2}");
-                            SelectionTile tile = _tilePool.GetItem();
-                            _tiles.Add(tile);
-                            tile.transform.position = new Vector3(blocksList.gameObjects[i].transform.position.x, 1.001f, index2);
-                        }
-                        index2 += _gridMult;
-                    }
-                }
-                
-            }
-            //_selectedObject = hit.transform.gameObject.GetComponent<MapTile>();
+            SelectTiles(hit);
         }
+    }
+    private void SelectTiles(RaycastHit hit)
+    {
+
+        _hitPos.x = Mathf.Round(hit.point.x);
+        _hitPos.z = Mathf.Round(hit.point.z);
+        if (_lastPos.x != _hitPos.x || _lastPos.z != _hitPos.z)
+        {
+           
+
+            _blockPointedAt = hit.transform.parent.gameObject.GetComponent<DungeonTile>();
+            _tilePrefab.transform.position = new Vector3(_hitPos.x, 0.001f, _hitPos.z);
+            if (_isHoldingMouse)
+            {
+                Logger.Log("DIF");
+                for (int i = _tiles.Count - 1; i >= 0; i--)
+                {
+                    _tiles[i].ReturnToPool();
+                    _tiles.RemoveAt(i);
+                }
+                Logger.Log("New selection");
+                float maxX = 0;
+                float minX = 0;
+                float maxZ = 0;
+                float minZ = 0;
+                maxX = math.max(_hitPos.x, _mouseHoldStartPos.x);
+                minX = math.min(_hitPos.x, _mouseHoldStartPos.x);
+                maxZ = math.max(_hitPos.z, _mouseHoldStartPos.z);
+                minZ = math.min(_hitPos.z, _mouseHoldStartPos.z);
+                Logger.Log($"Range x: {minX} {maxX} z: {minZ} {maxZ}");
+                float index = minX;
+                float index2 = minZ;
+                Vector3 newTilePos = Vector3.zero;
+                while (index2 <= maxZ)
+                {
+                    ListOfGameObjects blocksList = _blockPlacer.Blocks.Find(x => x.gameObjects.Find(y => math.abs(y.transform.position.z - index2) < _ROUND_ERROR_));
+                    
+                    for (int i = 0; i < blocksList.gameObjects.Count; i++)
+                    {
+                        if (blocksList.gameObjects[i].transform.position.x > maxX) break;
+                        if (blocksList.gameObjects[i].transform.position.x < minX) continue;
+                        newTilePos = new Vector3(blocksList.gameObjects[i].transform.position.x, 1.001f, index2);
+                        if (_allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, newTilePos))) continue;
+                        Logger.Log($" {blocksList.gameObjects[i].transform.position.x},{index2}");
+                        SelectionTile tile = _tilePool.GetItem();
+                        _tiles.Add(tile);
+                        tile.transform.position = newTilePos;
+                    }
+                    index2 += _gridMult;
+                }
+            }
+            _lastPos.x = _hitPos.x;
+            _lastPos.z = _hitPos.z;
+        }
+    }
+    private bool IsPositionSimilar(Vector3 pos1, Vector3 pos2)
+    {
+        if(math.abs(pos1.x - pos2.x)<0.01f)
+        {
+            if(math.abs(pos1.z-pos2.z)<0.01f)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     public void SetMousePos(Vector2 pos)
     {
@@ -113,8 +122,6 @@ public class DungeonBlockSelector : MonoBehaviour
     {
         if (_blockPointedAt.Dig) return;
         _blockPointedAt.SetDigState(true);
-        //GameObject go= Instantiate(_tilePrefab);
-        //go.transform.position = _blockPointedAt.TopBlockPos;
         SelectionTile tile = _tilePool.GetItem();
         _tiles.Add(tile);
         tile.transform.position = _blockPointedAt.TopBlockPos;
@@ -133,9 +140,11 @@ public class DungeonBlockSelector : MonoBehaviour
     public void StopTileHold()
     {
         _isHoldingMouse = false;
-        for (int i = _tiles.Count - 1; i >= _tiles.Count; i--)
+        
+        for (int i = _tiles.Count - 1; i >= 0; i--)
         {
-            _tiles[i].ReturnToPool();
+            _allSelectedTiles.Add(_tiles[i]);
+           // _tiles[i].ReturnToPool();
             _tiles.RemoveAt(i);
         }
     }

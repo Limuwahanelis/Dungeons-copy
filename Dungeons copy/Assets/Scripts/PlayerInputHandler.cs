@@ -65,6 +65,7 @@ public class PlayerInputHandler : MonoBehaviour
         }
         else
         {
+            Logger.Log("FSAFAF");
             _tileSelection.StopTileHold();
         }
     }
