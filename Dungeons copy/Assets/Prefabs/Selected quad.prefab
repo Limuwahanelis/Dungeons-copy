@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 5099970065659862149}
   - component: {fileID: 8764539516267091000}
   - component: {fileID: 3750246087288855374}
-  m_Layer: 2
-  m_Name: Quad
+  m_Layer: 6
+  m_Name: Selected quad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 8520766771292195691}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 4, y: 0.001, z: 4}
+  m_LocalPosition: {x: -1, y: 0.001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -52,7 +52,7 @@ public class PlayerInputHandler : MonoBehaviour
     {
 
         Logger.Log($"Fire {value.Get<float>()}");
-        _tileSelection.PlaceTile();
+        //_tileSelection.PlaceTile();
         if (_showExitPanel) return;
         
        // _tileObjectPlacer.PlaceTile();

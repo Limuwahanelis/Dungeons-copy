@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs_Block selector shader 1
+  m_Name: Green tile
   m_Shader: {fileID: -6465566751694194690, guid: c355ca0faa087044ca7a62240c139395,
     type: 3}
   m_Parent: {fileID: 0}
@@ -52,7 +52,7 @@ Material:
     - _alpha_range: 0.17
     - _mulkt: 5.08
     m_Colors:
-    - _Color: {r: 0, g: 0.5330829, b: 0.764151, a: 1}
+    - _Color: {r: 0.28312275, g: 0.7169812, b: 0, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &7096362605942900923
 MonoBehaviour:

@@ -9,12 +9,17 @@ public class DungeonBlockSelector : MonoBehaviour
     public bool IsHittingMap => _isHittingMap;
     [SerializeField] GameObject _tilePrefab;
     [SerializeField] LayerMask _mask;
+    [SerializeField] LayerMask _tilesLayersmask;
     [SerializeField] TileMapSetter _map;
     [SerializeField] DungeonBlockPlacer _blockPlacer;
     [SerializeField] SelectionTilePool _tilePool;
+    [SerializeField] Material _placedTileSelectorMat;
+    [SerializeField] Material _currentlySelectedTileMat;
+    [SerializeField] Material _removeTileMat;
     private const float _ROUND_ERROR_= 0.001f;
     private List<SelectionTile> _tiles=new List<SelectionTile>();
     private List<SelectionTile> _allSelectedTiles= new List<SelectionTile>();
+    private List<SelectionTile> _tilesToRemve= new List<SelectionTile>();
     private DungeonTile _blockPointedAt;
     private Vector3 _lastPos;
     private Vector3 _mouseHoldStartPos;
@@ -26,6 +31,7 @@ public class DungeonBlockSelector : MonoBehaviour
     private bool _isHittingMap;
     private bool _canHitMap = true;
     private bool _isHoldingMouse = false;
+    private bool _isHitingTile;
     // Start is called before the first frame update
     void Start()
     {
@@ -43,6 +49,17 @@ public class DungeonBlockSelector : MonoBehaviour
 
         RaycastHit hit;
         r = _cam.ScreenPointToRay(_mousePos);
+
+        if (!_isHoldingMouse)
+        {
+            if (Physics.Raycast(r, out hit, Mathf.Infinity, _tilesLayersmask))
+            {
+                SelectionTile tile = hit.collider.GetComponent<SelectionTile>();
+                if (tile.IsPlaced) _isHitingTile = true;
+                else _isHitingTile = false;
+            }
+            else _isHitingTile = false;
+        }
         if (_isHittingMap = Physics.Raycast(r, out hit, Mathf.Infinity, _mask))
         {
             SelectTiles(hit);
@@ -55,30 +72,46 @@ public class DungeonBlockSelector : MonoBehaviour
         _hitPos.z = Mathf.Round(hit.point.z);
         if (_lastPos.x != _hitPos.x || _lastPos.z != _hitPos.z)
         {
-           
+            Logger.Log("FF");
+           if(_tiles.Count == 1) 
+            {
+                    _tiles[0].ReturnToPool();
+                    _tiles.RemoveAt(0);
+            }
 
             _blockPointedAt = hit.transform.parent.gameObject.GetComponent<DungeonTile>();
             _tilePrefab.transform.position = new Vector3(_hitPos.x, 0.001f, _hitPos.z);
+            PlaceTile();
             if (_isHoldingMouse)
             {
                 Logger.Log("DIF");
+                if(_isHitingTile)
+                {
+                    
+                    for (int i=0;i< _allSelectedTiles.Count;i++)
+                    {
+                        _allSelectedTiles[i].SetMaterial(_placedTileSelectorMat);
+                        if (_tilesToRemve.Contains(_allSelectedTiles[i])) _tilesToRemve.Remove(_allSelectedTiles[i]);
+
+                    }
+                }
                 for (int i = _tiles.Count - 1; i >= 0; i--)
                 {
                     _tiles[i].ReturnToPool();
                     _tiles.RemoveAt(i);
                 }
                 Logger.Log("New selection");
-                float maxX = 0;
-                float minX = 0;
-                float maxZ = 0;
-                float minZ = 0;
-                maxX = math.max(_hitPos.x, _mouseHoldStartPos.x);
-                minX = math.min(_hitPos.x, _mouseHoldStartPos.x);
-                maxZ = math.max(_hitPos.z, _mouseHoldStartPos.z);
-                minZ = math.min(_hitPos.z, _mouseHoldStartPos.z);
-                Logger.Log($"Range x: {minX} {maxX} z: {minZ} {maxZ}");
+
+                float minX;
+                float minZ;
+                float maxX;
+                float maxZ;
+                SetMinMaxValues(_hitPos.x, _mouseHoldStartPos.x, out minX, out maxX);
+                SetMinMaxValues(_hitPos.z, _mouseHoldStartPos.z, out minZ, out maxZ);
                 float index = minX;
                 float index2 = minZ;
+                Logger.Log($"Range x: {minX} {maxX} z: {minZ} {maxZ}");
+
                 Vector3 newTilePos = Vector3.zero;
                 while (index2 <= maxZ)
                 {
@@ -89,11 +122,25 @@ public class DungeonBlockSelector : MonoBehaviour
                         if (blocksList.gameObjects[i].transform.position.x > maxX) break;
                         if (blocksList.gameObjects[i].transform.position.x < minX) continue;
                         newTilePos = new Vector3(blocksList.gameObjects[i].transform.position.x, 1.001f, index2);
-                        if (_allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, newTilePos))) continue;
-                        Logger.Log($" {blocksList.gameObjects[i].transform.position.x},{index2}");
-                        SelectionTile tile = _tilePool.GetItem();
-                        _tiles.Add(tile);
-                        tile.transform.position = newTilePos;
+                        SelectionTile placedTile = _allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, newTilePos));
+                        if (placedTile != null)
+                        {
+                            if (_isHitingTile)
+                            {
+                                placedTile.SetMaterial(_removeTileMat);
+                                if (_tilesToRemve.Contains(placedTile)) continue;
+                                _tilesToRemve.Add(placedTile);
+                            }
+                            else continue;
+                        }
+                        else
+                        {
+                            Logger.Log($" {blocksList.gameObjects[i].transform.position.x},{index2}");
+                            SelectionTile tile = _tilePool.GetItem();
+                            _tiles.Add(tile);
+                            tile.transform.position = newTilePos;
+                            if (_isHitingTile) tile.SetMaterial(_removeTileMat);
+                        }
                     }
                     index2 += _gridMult;
                 }
@@ -101,6 +148,11 @@ public class DungeonBlockSelector : MonoBehaviour
             _lastPos.x = _hitPos.x;
             _lastPos.z = _hitPos.z;
         }
+    }
+    private void SetMinMaxValues(float x1,float x2,out float minX, out float maxX)
+    {
+        maxX = math.max(x1, x2);
+        minX = math.min(x1, x2);
     }
     private bool IsPositionSimilar(Vector3 pos1, Vector3 pos2)
     {
@@ -120,9 +172,10 @@ public class DungeonBlockSelector : MonoBehaviour
     }
     public void PlaceTile()
     {
-        if (_blockPointedAt.Dig) return;
-        _blockPointedAt.SetDigState(true);
+        //if (_blockPointedAt.Dig) return;
+       // _blockPointedAt.SetDigState(true);
         SelectionTile tile = _tilePool.GetItem();
+        if(_isHitingTile) tile.SetMaterial( _removeTileMat );
         _tiles.Add(tile);
         tile.transform.position = _blockPointedAt.TopBlockPos;
     }
@@ -135,18 +188,43 @@ public class DungeonBlockSelector : MonoBehaviour
     {
         _isHoldingMouse = true;
         _mouseHoldStartPos = _blockPointedAt.TopBlockPos;
-        PlaceTile();
+        //PlaceTile();
     }
     public void StopTileHold()
     {
         _isHoldingMouse = false;
-        
-        for (int i = _tiles.Count - 1; i >= 0; i--)
+        if (_tiles.Count == 1) if (_allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, _tiles[0].transform.position))) return;
+        if (_isHitingTile)
         {
-            _allSelectedTiles.Add(_tiles[i]);
-           // _tiles[i].ReturnToPool();
-            _tiles.RemoveAt(i);
+            for(int i= _tilesToRemve.Count-1; i>=0;i--)
+            {
+                
+                _allSelectedTiles.Remove(_tilesToRemve[i]);
+                _tilesToRemve[i].ReturnToPool();
+                _tilesToRemve.RemoveAt(i);
+            }
+            for (int i = _tiles.Count - 1; i >= 0; i--)
+            {
+
+                _tiles[i].ReturnToPool();
+                // _tiles[i].ReturnToPool();
+                _tiles.RemoveAt(i);
+            }
         }
+        else
+        {
+            for (int i = _tiles.Count - 1; i >= 0; i--)
+            {
+
+                _allSelectedTiles.Add(_tiles[i]);
+                _tiles[i].SetMaterial(_placedTileSelectorMat);
+                _tiles[i].SetisPlaced(true);
+                // _tiles[i].ReturnToPool();
+                _tiles.RemoveAt(i);
+            }
+        }
+        // to allow selecting same tile when ending hold
+        _lastPos.x = _hitPos.x + 20f;
     }
     private void OnDrawGizmos()
     {

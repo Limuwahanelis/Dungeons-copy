@@ -1173,6 +1173,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _itemPrefab: {fileID: 3750246087288855374, guid: a9560c1599119914fab729b6073a54c4,
     type: 3}
+  _selectTileMat: {fileID: 2100000, guid: c76242f462d517e48b3d48930149bb95, type: 2}
 --- !u!1 &358757882 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1686474873144072019, guid: 92f9b5a9383fef54886ec29fe9282e5a,
@@ -2746,9 +2747,17 @@ MonoBehaviour:
   _mask:
     serializedVersion: 2
     m_Bits: 51
+  _tilesLayersmask:
+    serializedVersion: 2
+    m_Bits: 64
   _map: {fileID: 2133291606}
   _blockPlacer: {fileID: 1155770675}
   _tilePool: {fileID: 355263495}
+  _placedTileSelectorMat: {fileID: 2100000, guid: 0185e7ba192759a40b3fe66cbaf94123,
+    type: 2}
+  _currentlySelectedTileMat: {fileID: 2100000, guid: c76242f462d517e48b3d48930149bb95,
+    type: 2}
+  _removeTileMat: {fileID: 2100000, guid: 5e4c843f391886a4cbab43ae9d8dcab0, type: 2}
 --- !u!114 &1017262687
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -8,6 +8,7 @@ using UnityEngine.Search;
 public class  SelectionTilePool: MonoBehaviour
 {
     [SerializeField] SelectionTile _itemPrefab;
+    [SerializeField] Material _selectTileMat;
     private ObjectPool<SelectionTile> _pool;
 
     // Start is called before the first frame update
@@ -34,5 +35,7 @@ public class  SelectionTilePool: MonoBehaviour
     void OnReturnItemToPool(SelectionTile item)
     {
         item.gameObject.SetActive(false);
+        item.SetMaterial( _selectTileMat );
+        item.SetisPlaced(false);
     }
 }

@@ -5,7 +5,9 @@ using UnityEngine.Pool;
 
 public class SelectionTile : MonoBehaviour
 {
-   private  IObjectPool<SelectionTile> _pool;
+    public bool IsPlaced => _isPlaced;
+    private  IObjectPool<SelectionTile> _pool;
+    private bool _isPlaced = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -22,4 +24,12 @@ public class SelectionTile : MonoBehaviour
         _pool = pool;
     }
     public void ReturnToPool() => _pool.Release(this);
+    public void SetMaterial(Material mat)
+    {
+        GetComponent<MeshRenderer>().sharedMaterial = mat;
+    }
+    public void SetisPlaced(bool isPlaced)
+    {
+        _isPlaced=isPlaced;
+    }
 }
