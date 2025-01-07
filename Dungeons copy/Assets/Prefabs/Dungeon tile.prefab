@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de6d15b4eeee2a2438f45d2faa15dffd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _digTime: 1
   _state: 1
   _filledBlock: {fileID: 2063538515105896898}
   _blockTopTran: {fileID: 8267052336329774302}
