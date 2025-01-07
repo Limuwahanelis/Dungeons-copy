@@ -13,7 +13,7 @@ public class PlayerInputHandler : MonoBehaviour
     private Vector2 _direction;
     private bool _canRotate = false;
     private bool _showExitPanel = false;
-
+    private bool _isHolding = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -50,23 +50,27 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void OnFire(InputValue value)
     {
-
-        Logger.Log($"Fire {value.Get<float>()}");
-        //_tileSelection.PlaceTile();
+      //  Logger.Log("Click");
+        //if(value.Get<float>()>0) _tileSelection.ClickDungeonTile();
         if (_showExitPanel) return;
-        
-       // _tileObjectPlacer.PlaceTile();
     }
     public void OnFireHold(InputValue value)
     {
+        //Logger.Log($"HOLD: {value.Get<float>()}");
         if(value.Get<float>()>0)
         {
+            //Logger.Log("Hold");
+            _isHolding = true;
             _tileSelection.StartTileHold();
         }
         else
         {
-            Logger.Log("FSAFAF");
-            _tileSelection.StopTileHold();
+            if (_isHolding)
+            {
+                _tileSelection.StopTileHold();
+                _isHolding = false;
+            }
+            else _tileSelection.ClickDungeonTile();
         }
     }
 

@@ -24,18 +24,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Fire",
-                    "type": "Button",
-                    "id": "bdb661f5-a030-4cef-98c6-607b45c4ae37",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "FireHold",
                     "type": "Value",
                     "id": "b3c6e060-bf08-43cc-b1c9-548fcbfebc4a",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Fire",
+                    "type": "Value",
+                    "id": "bdb661f5-a030-4cef-98c6-607b45c4ae37",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -237,17 +237,6 @@
                 },
                 {
                     "name": "",
-                    "id": "e96b8b2e-94c6-4e0d-b060-f65c40075ad6",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "Tap",
-                    "processors": "Scale(factor=2)",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "Fire",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "0cd67445-6719-4f15-9850-f2860959d5bf",
                     "path": "<Mouse>/rightButton",
                     "interactions": "",
@@ -281,10 +270,21 @@
                 },
                 {
                     "name": "",
+                    "id": "e96b8b2e-94c6-4e0d-b060-f65c40075ad6",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "Scale(factor=2)",
+                    "groups": "",
+                    "action": "Fire",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "3008d0a5-78e6-437a-b302-115df4ab6251",
                     "path": "<Mouse>/leftButton",
                     "interactions": "Hold",
-                    "processors": "",
+                    "processors": "Scale(factor=4)",
                     "groups": "",
                     "action": "FireHold",
                     "isComposite": false,

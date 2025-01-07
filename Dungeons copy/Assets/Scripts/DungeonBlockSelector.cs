@@ -32,13 +32,14 @@ public class DungeonBlockSelector : MonoBehaviour
     private bool _canHitMap = true;
     private bool _isHoldingMouse = false;
     private bool _isHitingTile;
+    // TODO: change spawning green selection tile to already spawned one.
     // Start is called before the first frame update
     void Start()
     {
         _cam = Camera.main;
         _lastPos.x = 0;
         _lastPos.z = 0;
-        _tilePrefab.transform.position = new Vector3(0, 0.001f, 0);
+        _tilePrefab.transform.position = new Vector3(0, 1.001f, 0);
         _tilePrefab.SetActive(true);
     }
 
@@ -72,17 +73,16 @@ public class DungeonBlockSelector : MonoBehaviour
         _hitPos.z = Mathf.Round(hit.point.z);
         if (_lastPos.x != _hitPos.x || _lastPos.z != _hitPos.z)
         {
-            Logger.Log("FF");
-           if(_tiles.Count == 1) 
-            {
-                    _tiles[0].ReturnToPool();
-                    _tiles.RemoveAt(0);
-            }
+           //if(_tiles.Count == 0) 
+           // {
+           //         _tiles[0].ReturnToPool();
+           //         _tiles.RemoveAt(0);
+           // }
 
             _blockPointedAt = hit.transform.parent.gameObject.GetComponent<DungeonTile>();
-            _tilePrefab.transform.position = new Vector3(_hitPos.x, 0.001f, _hitPos.z);
+            _tilePrefab.transform.position = new Vector3(_hitPos.x, 1.001f, _hitPos.z);
             PlaceTile();
-            if (_isHoldingMouse)
+            if (_isHoldingMouse) //TODO: make this part work also when not holding mouse but when just clicinkg on single tile
             {
                 Logger.Log("DIF");
                 if(_isHitingTile)
@@ -119,8 +119,10 @@ public class DungeonBlockSelector : MonoBehaviour
                     
                     for (int i = 0; i < blocksList.gameObjects.Count; i++)
                     {
-                        if (blocksList.gameObjects[i].transform.position.x > maxX) break;
+                        if (blocksList.gameObjects[i] == null) continue;
+                        if (blocksList.gameObjects[i].transform.position.x > maxX) continue;
                         if (blocksList.gameObjects[i].transform.position.x < minX) continue;
+                        if (blocksList.gameObjects[i].GetComponent<DungeonTile>().State == DungeonTile.DungeonTileState.DUNGEON_HEART) continue;
                         newTilePos = new Vector3(blocksList.gameObjects[i].transform.position.x, 1.001f, index2);
                         SelectionTile placedTile = _allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, newTilePos));
                         if (placedTile != null)
@@ -149,6 +151,34 @@ public class DungeonBlockSelector : MonoBehaviour
             _lastPos.z = _hitPos.z;
         }
     }
+    private bool TrySelectTile(GameObject tileObject, float tileZpos, Vector3 newTilePos,float tileMaxXPos, float tileMinXPos)
+    {
+        if (tileObject == null) return false;
+        if (tileObject.transform.position.x > tileMaxXPos) return false;
+        if (tileObject.transform.position.x < tileMinXPos) return false;
+        if (tileObject.GetComponent<DungeonTile>().State == DungeonTile.DungeonTileState.DUNGEON_HEART) return false;
+        newTilePos = new Vector3(tileObject.transform.position.x, 1.001f, tileZpos);
+        SelectionTile placedTile = _allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, newTilePos));
+        if (placedTile != null)
+        {
+            if (_isHitingTile)
+            {
+                placedTile.SetMaterial(_removeTileMat);
+                if (_tilesToRemve.Contains(placedTile)) return false;
+                _tilesToRemve.Add(placedTile);
+            }
+            else return false;
+        }
+        else
+        {
+           // Logger.Log($" {tileObject.transform.position.x},{index2}");
+            SelectionTile tile = _tilePool.GetItem();
+            _tiles.Add(tile);
+            tile.transform.position = newTilePos;
+            if (_isHitingTile) tile.SetMaterial(_removeTileMat);
+        }
+        return true;
+    }
     private void SetMinMaxValues(float x1,float x2,out float minX, out float maxX)
     {
         maxX = math.max(x1, x2);
@@ -170,14 +200,33 @@ public class DungeonBlockSelector : MonoBehaviour
         _mousePos = pos;
 
     }
+    public void ClickDungeonTile()
+    {
+        if (_isHitingTile)
+        {
+            SelectionTile placedTile = _allSelectedTiles.Find(x => IsPositionSimilar(_blockPointedAt.TopBlockPos, x.transform.position));
+            placedTile.ReturnToPool();
+            _allSelectedTiles.Remove(placedTile);
+        }
+        else
+        {
+            if (_blockPointedAt.State == DungeonTile.DungeonTileState.DUNGEON_HEART) return;
+            SelectionTile tile = _tilePool.GetItem();
+            _allSelectedTiles.Add(tile);
+            _isHitingTile = true;
+            tile.SetisPlaced(true);
+            tile.SetMaterial(_placedTileSelectorMat);
+            tile.transform.position = _blockPointedAt.TopBlockPos;
+        }
+
+    }
     public void PlaceTile()
     {
-        //if (_blockPointedAt.Dig) return;
-       // _blockPointedAt.SetDigState(true);
-        SelectionTile tile = _tilePool.GetItem();
-        if(_isHitingTile) tile.SetMaterial( _removeTileMat );
-        _tiles.Add(tile);
-        tile.transform.position = _blockPointedAt.TopBlockPos;
+       // SelectionTile tile = _tilePool.GetItem();
+        if(_isHitingTile) _tilePrefab.GetComponent<SelectionTile>().SetMaterial( _removeTileMat );
+        else _tilePrefab.GetComponent<SelectionTile>().SetMaterial(_currentlySelectedTileMat );
+       // _tiles.Add(tile);
+        //tile.transform.position = _blockPointedAt.TopBlockPos;
     }
     public void SetCanHitMap(bool value)
     {
@@ -193,12 +242,24 @@ public class DungeonBlockSelector : MonoBehaviour
     public void StopTileHold()
     {
         _isHoldingMouse = false;
-        if (_tiles.Count == 1) if (_allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, _tiles[0].transform.position))) return;
+        if (_tiles.Count == 1)
+        {
+            if (_allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, _tiles[0].transform.position)))
+            {
+                if (_isHitingTile)
+                {
+                    _allSelectedTiles.Remove(_tiles[0]);
+                    _tiles[0].ReturnToPool();
+                    _tiles.RemoveAt(0);
+                }
+                else return;
+
+            }
+        }
         if (_isHitingTile)
         {
             for(int i= _tilesToRemve.Count-1; i>=0;i--)
             {
-                
                 _allSelectedTiles.Remove(_tilesToRemve[i]);
                 _tilesToRemve[i].ReturnToPool();
                 _tilesToRemve.RemoveAt(i);
@@ -207,7 +268,6 @@ public class DungeonBlockSelector : MonoBehaviour
             {
 
                 _tiles[i].ReturnToPool();
-                // _tiles[i].ReturnToPool();
                 _tiles.RemoveAt(i);
             }
         }
@@ -219,7 +279,6 @@ public class DungeonBlockSelector : MonoBehaviour
                 _allSelectedTiles.Add(_tiles[i]);
                 _tiles[i].SetMaterial(_placedTileSelectorMat);
                 _tiles[i].SetisPlaced(true);
-                // _tiles[i].ReturnToPool();
                 _tiles.RemoveAt(i);
             }
         }
