@@ -35,7 +35,6 @@ public class DungeonBlockSelector : MonoBehaviour
     private bool _canHitMap = true;
     private bool _isHoldingMouse = false;
     private bool _isHitingTile;
-    // TODO: change spawning green selection tile to already spawned one.
     // Start is called before the first frame update
     void Start()
     {
@@ -76,18 +75,11 @@ public class DungeonBlockSelector : MonoBehaviour
         _hitPos.z = Mathf.Round(hit.point.z);
         if (_lastPos.x != _hitPos.x || _lastPos.z != _hitPos.z)
         {
-           //if(_tiles.Count == 0) 
-           // {
-           //         _tiles[0].ReturnToPool();
-           //         _tiles.RemoveAt(0);
-           // }
-
             _blockPointedAt = hit.transform.parent.gameObject.GetComponent<DungeonTile>();
             _tilePrefab.transform.position = new Vector3(_hitPos.x, 1.001f, _hitPos.z);
             PlaceTile();
             if (_isHoldingMouse)
             {
-                Logger.Log("DIF");
                 if(_isHitingTile)
                 {
                     
@@ -101,8 +93,6 @@ public class DungeonBlockSelector : MonoBehaviour
                     {
                         if (_dungeonBlocksToRemoveFromList.Contains(_allSelectedBlocks[i]))
                         {
-                            //_allSelectedBlocks[i].SetDigState(false);
-                            //_allSelectedBlocks[i].OnTileDug -= RemoveTile;
                             _dungeonBlocksToRemoveFromList.Remove(_allSelectedBlocks[i]);
                         }
                     }
@@ -116,8 +106,6 @@ public class DungeonBlockSelector : MonoBehaviour
                 {
                     _dungeonBlocks.RemoveAt(i);
                 }
-                Logger.Log("New selection");
-
                 float minX;
                 float minZ;
                 float maxX;
@@ -184,7 +172,6 @@ public class DungeonBlockSelector : MonoBehaviour
             if (_isHitingTile)
             {
                 placedTile.SetMaterial(_removeTileMat);
-                //_dungeonBlocksToRemoveFromList.Add(_blockPointedAt)
                 if (_tilesToRemve.Contains(placedTile)) return false;
                 _tilesToRemve.Add(placedTile);
             }
@@ -192,7 +179,6 @@ public class DungeonBlockSelector : MonoBehaviour
         }
         else
         {
-           // Logger.Log($" {tileObject.transform.position.x},{index2}");
             SelectionTile tile = _tilePool.GetItem();
             _tiles.Add(tile);
             tile.transform.position = newTilePos;
@@ -249,11 +235,8 @@ public class DungeonBlockSelector : MonoBehaviour
     }
     public void PlaceTile()
     {
-       // SelectionTile tile = _tilePool.GetItem();
         if(_isHitingTile) _tilePrefab.GetComponent<SelectionTile>().SetMaterial( _removeTileMat );
         else _tilePrefab.GetComponent<SelectionTile>().SetMaterial(_currentlySelectedTileMat );
-       // _tiles.Add(tile);
-        //tile.transform.position = _blockPointedAt.TopBlockPos;
     }
     public void SetCanHitMap(bool value)
     {
@@ -264,25 +247,10 @@ public class DungeonBlockSelector : MonoBehaviour
     {
         _isHoldingMouse = true;
         _mouseHoldStartPos = _blockPointedAt.TopBlockPos;
-        //PlaceTile();
     }
     public void StopTileHold()
     {
         _isHoldingMouse = false;
-        //if (_tiles.Count == 0)
-        //{
-        //    if (_allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, _tiles[0].transform.position)))
-        //    {
-        //        if (_isHitingTile)
-        //        {
-        //            _allSelectedTiles.Remove(_tiles[0]);
-        //            _tiles[0].ReturnToPool();
-        //            _tiles.RemoveAt(0);
-        //        }
-        //        else return;
-
-        //    }
-        //}
         if (_isHitingTile)
         {
             for(int i= _tilesToRemve.Count-1; i>=0;i--)
@@ -295,7 +263,6 @@ public class DungeonBlockSelector : MonoBehaviour
                 _allSelectedTiles.Remove(_tilesToRemve[i]);
                 _tilesToRemve[i].ReturnToPool();
                 _tilesToRemve.RemoveAt(i);
-
             }
             for (int i = _tiles.Count - 1; i >= 0; i--)
             {
@@ -325,7 +292,9 @@ public class DungeonBlockSelector : MonoBehaviour
         SelectionTile tile= _allSelectedTiles.Find(x => IsPositionSimilar(dungTile.TopBlockPos, x.transform.position));
         
         _allSelectedTiles.Remove(tile);
-        tile.ReturnToPool(); // gdy daje pojedyncze a usuwam grupowo error
+        tile.ReturnToPool(); 
+        if(_tilesToRemve.Contains(tile)) _tilesToRemve.Remove(tile);
+        if( _dungeonBlocksToRemoveFromList.Contains(dungTile)) _dungeonBlocksToRemoveFromList.Remove(dungTile);
         dungTile.OnTileDug -= RemoveTile;
     }
     private void OnDrawGizmos()

@@ -18,7 +18,7 @@ public class DungeonTile : MonoBehaviour
     [SerializeField] GameObject _filledBlock;
     [SerializeField] Transform _blockTopTran;
     private bool _toDig = false;
-    private Coroutine _digCor;
+    private Coroutine _digCor=null;
     public void SetTileState(DungeonTileState state)
     {
         _state = state;
@@ -29,11 +29,15 @@ public class DungeonTile : MonoBehaviour
         _toDig = value;
         if(_toDig)
         {
-            if(_digCor==null) _digCor = StartCoroutine(DigCor());
+
+            if (_digCor == null)
+            {
+                _digCor = StartCoroutine(DigCor());
+            }
         }
         else
         {
-            if(_digCor!=null)
+            if (_digCor!=null)
             {
                 StopCoroutine(_digCor);
                 _digCor = null;
@@ -55,7 +59,7 @@ public class DungeonTile : MonoBehaviour
         yield return new WaitForSeconds(_digTime);
         _state = DungeonTileState.EMPTY;
         _filledBlock.GetComponent<MeshRenderer>().enabled = false;
-        _digCor = null;
         OnTileDug?.Invoke(this);
+        _digCor = null;
     }
 }
