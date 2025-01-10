@@ -76,7 +76,11 @@ public class DungeonBlockSelector : MonoBehaviour
         if (_lastPos.x != _hitPos.x || _lastPos.z != _hitPos.z)
         {
             _blockPointedAt = hit.transform.parent.gameObject.GetComponent<DungeonTile>();
-            _tilePrefab.transform.position = new Vector3(_hitPos.x, 1.001f, _hitPos.z);
+            if (_blockPointedAt.State == DungeonTile.DungeonTileState.FILLED)
+            {
+                _tilePrefab.transform.position = new Vector3(_hitPos.x, 1.001f, _hitPos.z);
+                _tilePrefab.SetActive(true);
+            }
             PlaceTile();
             if (_isHoldingMouse)
             {
@@ -295,6 +299,7 @@ public class DungeonBlockSelector : MonoBehaviour
         tile.ReturnToPool(); 
         if(_tilesToRemve.Contains(tile)) _tilesToRemve.Remove(tile);
         if( _dungeonBlocksToRemoveFromList.Contains(dungTile)) _dungeonBlocksToRemoveFromList.Remove(dungTile);
+        if (IsPositionSimilar(_tilePrefab.transform.position, tile.transform.position)) _tilePrefab.SetActive(false);
         dungTile.OnTileDug -= RemoveTile;
     }
     private void OnDrawGizmos()
