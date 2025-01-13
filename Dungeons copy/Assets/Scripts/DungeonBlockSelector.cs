@@ -81,6 +81,10 @@ public class DungeonBlockSelector : MonoBehaviour
                 _tilePrefab.transform.position = new Vector3(_hitPos.x, 1.001f, _hitPos.z);
                 _tilePrefab.SetActive(true);
             }
+            else if(_blockPointedAt.State == DungeonTile.DungeonTileState.EMPTY || _blockPointedAt.State ==DungeonTile.DungeonTileState.DUNGEON_HEART)
+            {
+                _tilePrefab.SetActive(false);
+            }
             PlaceTile();
             if (_isHoldingMouse)
             {
@@ -163,33 +167,6 @@ public class DungeonBlockSelector : MonoBehaviour
             _lastPos.z = _hitPos.z;
         }
     }
-    private bool TrySelectTile(GameObject tileObject, float tileZpos, Vector3 newTilePos,float tileMaxXPos, float tileMinXPos)
-    {
-        if (tileObject == null) return false;
-        if (tileObject.transform.position.x > tileMaxXPos) return false;
-        if (tileObject.transform.position.x < tileMinXPos) return false;
-        if (tileObject.GetComponent<DungeonTile>().State == DungeonTile.DungeonTileState.DUNGEON_HEART) return false;
-        newTilePos = new Vector3(tileObject.transform.position.x, 1.001f, tileZpos);
-        SelectionTile placedTile = _allSelectedTiles.Find(x => IsPositionSimilar(x.transform.position, newTilePos));
-        if (placedTile != null)
-        {
-            if (_isHitingTile)
-            {
-                placedTile.SetMaterial(_removeTileMat);
-                if (_tilesToRemve.Contains(placedTile)) return false;
-                _tilesToRemve.Add(placedTile);
-            }
-            else return false;
-        }
-        else
-        {
-            SelectionTile tile = _tilePool.GetItem();
-            _tiles.Add(tile);
-            tile.transform.position = newTilePos;
-            if (_isHitingTile) tile.SetMaterial(_removeTileMat);
-        }
-        return true;
-    }
     private void SetMinMaxValues(float x1,float x2,out float minX, out float maxX)
     {
         maxX = math.max(x1, x2);
@@ -249,6 +226,8 @@ public class DungeonBlockSelector : MonoBehaviour
     }
     public void StartTileHold()
     {
+        if (!_isHittingMap) return;
+        if (_blockPointedAt.State != DungeonTile.DungeonTileState.FILLED) return;
         _isHoldingMouse = true;
         _mouseHoldStartPos = _blockPointedAt.TopBlockPos;
     }

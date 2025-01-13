@@ -17,6 +17,7 @@ public class DungeonTile : MonoBehaviour
     [SerializeField] DungeonTileState _state;
     [SerializeField] GameObject _filledBlock;
     [SerializeField] Transform _blockTopTran;
+    [SerializeField] Transform _blockBottomTran;
     private bool _toDig = false;
     private Coroutine _digCor=null;
     public void SetTileState(DungeonTileState state)
