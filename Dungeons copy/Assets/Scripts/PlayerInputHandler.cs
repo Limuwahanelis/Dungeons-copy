@@ -10,6 +10,7 @@ public class PlayerInputHandler : MonoBehaviour
     //[SerializeField] TileObjectPlacer _tileObjectPlacer;
     //[SerializeField] ExitApp _exitApp;
     [SerializeField] DungeonBlockSelector _tileSelection;
+    [SerializeField] SeparateSelector _separateSelector;
     private Vector2 _direction;
     private bool _canRotate = false;
     private bool _showExitPanel = false;
@@ -61,22 +62,25 @@ public class PlayerInputHandler : MonoBehaviour
         {
             //Logger.Log("Hold");
             _isHolding = true;
-            _tileSelection.StartTileHold();
+           // _tileSelection.StartTileHold();
+            _separateSelector.StartSelection();
         }
         else
         {
             if (_isHolding)
             {
-                _tileSelection.StopTileHold();
+                _separateSelector.EndSelection();
+                //_tileSelection.StopTileHold();
                 _isHolding = false;
             }
-            else _tileSelection.ClickDungeonTile();
+            //else _tileSelection.ClickDungeonTile();
         }
     }
 
     public void OnCursor(InputValue value)
     {
         if (_showExitPanel) return;
-        _tileSelection.SetMousePos(value.Get<Vector2>());
+        //_tileSelection.SetMousePos(value.Get<Vector2>());
+        _separateSelector.SetMousePos(value.Get<Vector2>());
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class HelperClass : MonoBehaviour
@@ -29,5 +30,10 @@ public class HelperClass : MonoBehaviour
         // sub result - <0 means gameObjectToCheckPos is on right, else its on left. Mult result - <0 gameObjectToCheckPos is in front, else gameObjectToCheckPos is behind
         if ((gameObjectPos.x - gameObjectToCheckPos.x) * ((int)gameObjectLookingDirection) <= 0) return false;
         else return true;
+    }
+    public static void SetMinMaxValues(float x1, float x2, out float minX, out float maxX)
+    {
+        maxX = math.max(x1, x2);
+        minX = math.min(x1, x2);
     }
 }
