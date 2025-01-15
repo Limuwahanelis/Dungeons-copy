@@ -16,6 +16,7 @@ public class DungeonBlockSelector : MonoBehaviour
     [SerializeField] Material _placedTileSelectorMat;
     [SerializeField] Material _currentlySelectedTileMat;
     [SerializeField] Material _removeTileMat;
+    //[SerializeField] SeparateSelector _separateSelector;
     private const float _ROUND_ERROR_= 0.001f;
     private List<SelectionTile> _tiles=new List<SelectionTile>();
     private List<SelectionTile> _allSelectedTiles= new List<SelectionTile>();
@@ -35,6 +36,9 @@ public class DungeonBlockSelector : MonoBehaviour
     private bool _canHitMap = true;
     private bool _isHoldingMouse = false;
     private bool _isHitingTile;
+    //private Vector2 _selectionStart;
+    //private Vector2 _selectionEnd;
+    //private List<DungeonTile> _testTiles = new List<DungeonTile>();
     // Start is called before the first frame update
     void Start()
     {
@@ -43,8 +47,14 @@ public class DungeonBlockSelector : MonoBehaviour
         _lastPos.z = 0;
         _tilePrefab.transform.position = new Vector3(0, 1.001f, 0);
         _tilePrefab.SetActive(true);
+        //_separateSelector.OnSelectionChangedViewport += UpdateSelection;
     }
-
+    //private void UpdateSelection(Vector2 selectionstart,Vector2 selctionEnd)
+    //{
+    //    _selectionStart = selectionstart;
+    //    _selectionEnd = selctionEnd;
+    //    SelectTiles2();
+    //}
     // Update is called once per frame
     void Update()
     {
@@ -167,6 +177,33 @@ public class DungeonBlockSelector : MonoBehaviour
             _lastPos.z = _hitPos.z;
         }
     }
+    //private void SelectTiles2()
+    //{
+    //    Rect sel = new Rect(_selectionStart, _selectionEnd - _selectionStart);
+    //    Vector3 pos;
+    //    ListOfGameObjects blocksList = _blockPlacer.Blocks.Find(x => x.gameObjects.Find(y => sel.Contains(pos=_cam.WorldToViewportPoint(y.transform.position))));
+    //    GameObject aa;
+    //    if (blocksList == null) return;
+    //    for (int i=0;i< blocksList.gameObjects.Count;i++) 
+    //    {
+    //        aa = blocksList.gameObjects[i];
+    //        //Logger.Log(_cam.WorldToViewportPoint(blocksList.gameObjects[i].transform.position));
+    //        if (sel.Contains(_cam.WorldToViewportPoint(blocksList.gameObjects[i].transform.position)))
+    //        {
+    //            Logger.Log(aa.transform.position);
+    //            if (!_testTiles.Contains(aa.GetComponent<DungeonTile>()))
+    //            {
+    //                _testTiles.Add(aa.GetComponent<DungeonTile>());
+    //                SelectionTile tile = _tilePool.GetItem();
+    //                //_allSelectedTiles.Add(tile);
+    //                //_isHitingTile = true;
+    //                tile.SetisPlaced(true);
+    //                tile.SetMaterial(_placedTileSelectorMat);
+    //                tile.transform.position = aa.GetComponent<DungeonTile>().TopBlockPos;
+    //            }
+    //        }
+    //    }
+    //}
     private void SetMinMaxValues(float x1,float x2,out float minX, out float maxX)
     {
         maxX = math.max(x1, x2);

@@ -6,7 +6,7 @@ public class DungeonRoomPlacer : MonoBehaviour
 {
     [SerializeField] bool _canPlaceRooms;
     [SerializeField] RoomToPlaceSelector roomToPlaceSelector;
-    [SerializeField] 
+    //[SerializeField] 
     void Update()
     {
         

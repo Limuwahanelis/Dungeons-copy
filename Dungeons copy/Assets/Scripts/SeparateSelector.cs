@@ -7,7 +7,8 @@ public class SeparateSelector : MonoBehaviour
 {
     public Action<Vector2, Vector2> OnSelectionChangedWorld;
     public Action<Vector2, Vector2> OnSelectionChangedViewport;
-    [SerializeField]
+    [SerializeField] bool _showSelection;
+    [SerializeField] RectTransform _selectionSquare;
     private Camera _cam;
     private Vector2 _lastMouseScreenPos;
     private Vector2 _mouseHoldStartScreenPos;
@@ -52,15 +53,21 @@ public class SeparateSelector : MonoBehaviour
             _maxScreenPosToConvert.z = _cam.nearClipPlane;
             _selectionStart = _cam.ScreenToWorldPoint(_minScreenPosToConvert);
             _selectionEnd = _cam.ScreenToWorldPoint(_maxScreenPosToConvert);
-            Logger.Log($"Range x: {minX} {maxX} y: {minY} {maxY}");
-            Logger.Log($"World pos min point: {_selectionStart} max: {_selectionEnd}");
+            //Logger.Log($"Range x: {minX} {maxX} y: {minY} {maxY}");
+            //Logger.Log($"World pos min point: {_selectionStart} max: {_selectionEnd}");
             OnSelectionChangedWorld?.Invoke(_selectionStart, _selectionEnd);
             _selectionStart = _cam.ScreenToViewportPoint(_minScreenPosToConvert);
             _selectionEnd= _cam.ScreenToViewportPoint( _maxScreenPosToConvert);
-            Logger.Log($"Viewport pos min:{_selectionStart} max: {_selectionEnd}");
+            //Logger.Log($"Viewport pos min:{_selectionStart} max: {_selectionEnd}");
             _lastMouseScreenPos = _mouseScreenPos;
             OnSelectionChangedViewport?.Invoke(_selectionStart, _selectionEnd);
+            if(_showSelection) UpdateSelectionBox(_minScreenPosToConvert,_maxScreenPosToConvert);
         }
+    }
+    private void UpdateSelectionBox(Vector2 selectionStart,Vector2 selectionEnd)
+    {
+        _selectionSquare.position = selectionStart;
+        _selectionSquare.sizeDelta = selectionEnd - selectionStart;
     }
     public void StartSelection()
     {
